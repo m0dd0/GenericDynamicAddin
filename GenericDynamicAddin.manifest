@@ -4,9 +4,9 @@
 	"id":	"HQedoQxZiVUgtWFDBREB",
 	"author":	"Moritz Hesche",
 	"description":	{
-		"":	"A custom addin for Fusion360."
+		"":	"A generic dyamic addin for Fusion360."
 	},
-	"version":	"Moritz Hesche",
+	"version":	"0.0.1",
 	"runOnStartup":	false,
 	"supportedOS":	"windows|mac",
 	"editEnabled":	true

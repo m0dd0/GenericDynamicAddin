@@ -125,7 +125,7 @@ def run(context):
         cmd = faf.AddinCommand(
             control,
             resourceFolder="lightbulb",
-            name="MyCustomAdddin",
+            name="GenericDynamicAddin",
             commandCreated=on_created,
             inputChanged=on_input_changed,
             executePreview=on_preview,
