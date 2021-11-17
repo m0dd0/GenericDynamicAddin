@@ -6,6 +6,7 @@ from pathlib import Path
 import adsk.core, adsk.fusion, adsk.cam
 
 from .fusion_addin_framework import fusion_addin_framework as faf
+from .voxler import voxler as vox
 from .src.ui import InputIds, CommandWindow
 
 
@@ -31,18 +32,24 @@ def on_created(event_args: adsk.core.CommandCreatedEventArgs):
     command_window = CommandWindow(command, RESOURCE_FOLDER)
 
 
-def on_execute(event_args: adsk.core.CommandEventArgs):
-    pass
-
-
 def on_input_changed(event_args: adsk.core.InputChangedEventArgs):
-    # !!! do NOT use this because of bug # (will only contain changed inputs of the same input group)
+    # !!! do NOT use this because of bug
+    # (will only contain inputs of the same input group as the changed input)
     # inputs = event_args.inputs
     # use instead:
     # inputs = event_args.firingEvent.sender.commandInputs
 
-    if event_args.input.id == InputIds.Button1:
-        adsk.core.Application.get().userInterface.messageBox("Button clicked.")
+    if event_args.input.id == InputIds.Button1.value:
+        vox.DirectCube(adsk.core.Application.get().activeDocument.rootComponent)
+        # adsk.core.Application.get().userInterface.messageBox("Button clicked.")
+
+
+def on_preview(event_args: adsk.core.CommandEventArgs):
+    pass
+
+
+def on_execute(event_args: adsk.core.CommandEventArgs):
+    pass
 
 
 def on_destroy(event_args: adsk.core.CommandEventArgs):
@@ -74,6 +81,7 @@ def run(context):
             name="MyCustomAdddin",
             commandCreated=on_created,
             inputChanged=on_input_changed,
+            executePreview=on_preview,
             execute=on_execute,
             destroy=on_destroy,
         )
