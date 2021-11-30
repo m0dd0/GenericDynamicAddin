@@ -32,6 +32,29 @@ periodic_thread = None  # started in creaed handler and stoppen on destroy
 execution_queue = Queue()
 
 # handlers #####################################################################
+def thread_execute():
+    # to get fusion work done from an thread you normally fire a custom event:
+    # ao.app.fireCustomEvent(custom_event_id)
+
+    # sometimes you want the action in the thread to be determined by the thread
+    # itself (otherwise you would have to create a custom event for every action)
+    # this can be achieved by using a (second) execution_query for the custom event:
+    # custom_event_execution_queue.put(action)
+    # ao.app.fireCustomEvent(custom_event_id)
+    # (custom event handler looks same as execute handler in this case)
+
+    # however since this is quite similar to the command.doExecute(False) approach
+    # it seems logically to use the execute handler directly.
+    # In this case only one excution_queue needs to be handled.
+    # it seems like both verison are working fine
+    execution_queue.put(
+        lambda: vox.DirectCube(ao.rootComponent, (0, 0, 0), 1, name="periodic execute")
+    )
+    # in this case replaces ao.app.fireCustomEvent(custom_event_id)
+    # can be seen as ao.app.fireEvent('execute_id')
+    command.doExecute(False)
+
+
 def on_created(event_args: adsk.core.CommandCreatedEventArgs):
     global command
     command = event_args.command
@@ -41,10 +64,7 @@ def on_created(event_args: adsk.core.CommandCreatedEventArgs):
     command_window = CommandWindow(command, RESOURCE_FOLDER)
 
     global periodic_thread
-    periodic_thread = faf.utils.PeriodicExecuter(
-        1,
-        lambda: ao.app.fireCustomEvent(custom_event_id),
-    )
+    periodic_thread = faf.utils.PeriodicExecuter(1, thread_execute)
     periodic_thread.start()
 
     # does not work because command hasnt been created yet
