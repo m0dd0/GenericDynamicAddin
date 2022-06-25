@@ -2,7 +2,6 @@ import logging
 from uuid import uuid4
 import traceback
 from pathlib import Path
-import random
 from queue import Queue
 
 import adsk.core, adsk.fusion, adsk.cam
@@ -12,22 +11,8 @@ from .voxler import voxler as vox
 from .src.ui import InputIds, CommandWindow
 
 
-# settings / constants #########################################################
-LOGGING_ENABLED = True
-RESOURCE_FOLDER = (
-    Path(__file__).parent
-    / "fusion_addin_framework"
-    / "fusion_addin_framework"
-    / "default_images"
-)
-# RESOURCE_FOLDER = Path(__file__).parent / "resources"
-
-
 # globals ######################################################################
-addin = None
-ao = faf.utils.AppObjects()
 command = None  # needed for custom event handlers see def on_custom_event()
-custom_event_id = None  # see notes on def on_custom_event()
 periodic_thread = None  # started in creaed handler and stoppen on destroy
 execution_queue = Queue()
 
@@ -134,13 +119,11 @@ def run(context):
                 [logging.StreamHandler(), faf.utils.TextPaletteLoggingHandler()],
             )
 
-        global addin
         addin = faf.FusionAddin()
         workspace = faf.Workspace(addin, id="FusionSolidEnvironment")
         tab = faf.Tab(workspace, id="ToolsTab")
         panel = faf.Panel(tab, id="SolidScriptsAddinsPanel")
         control = faf.Control(panel)
-        global custom_event_id
         custom_event_id = str(uuid4())
         cmd = faf.AddinCommand(
             control,
@@ -163,8 +146,8 @@ def run(context):
 
 def stop(context):
     try:
-        ui = ao.userInterface
-        addin.stop()
+        ui = adsk.core.Application.get().userInterface
+        faf.stop()
     except:
         msg = "Failed:\n{}".format(traceback.format_exc())
         if ui:
