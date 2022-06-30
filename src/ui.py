@@ -11,9 +11,8 @@ class InputIds(faf.utils.InputIdsBase):
 
 
 class CommandWindow:
-    def __init__(self, command, resource_folder):
+    def __init__(self, command):
         self._command = command
-        self._resource_folder = resource_folder
 
         self._create_group_1()
 
@@ -26,6 +25,4 @@ class CommandWindow:
             InputIds.Button1.value,
             "Button 1",
             True,
-            str(self._resource_folder / "lightbulb"),
-            False,
         )
