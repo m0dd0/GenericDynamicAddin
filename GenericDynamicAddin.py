@@ -1,5 +1,4 @@
 import logging
-from uuid import uuid4
 import traceback
 from queue import Queue
 
@@ -14,12 +13,16 @@ command = None  # needed for custom event handlers see def on_custom_event()
 periodic_thread = None  # started in creaed handler and stoppen on destroy
 execution_queue = Queue()
 i = 0
+j = 0
 
 
 # handlers #####################################################################
 def trigger_command_queue():
     # command cant be retrieved from args --> global instance necessary
     global i
+
+    # in this section we fetch/update the information of a logic model and use it to make the correct
+    # changes in Fusion
 
     if command.isValid:
         execution_queue.put(
@@ -56,28 +59,17 @@ def on_created(event_args: adsk.core.CommandCreatedEventArgs):
     # thread must be global so it can be killed in the destroy handler
     global periodic_thread
 
-    # in the thread we fire an custom event which fille the execution queue and triggers the command.execute(False) method
-    # this can be realized in two method:
+    # the thread->custom_event->execution_queue method described above can be realized in two ways:
     # 1.) The classsic one:
-    # 1.1) Create a cusotm event here. If they get created later they wont work. The event handler triggers the command.execute()
     faf.utils.create_custom_event(
         "CommandActionTriggerEventId", lambda event_args: trigger_command_queue()
     )
-    # 1.2) fire the custom event from the thread (see thread execute)
     periodic_thread = faf.utils.PeriodicExecuter(
         2,
         lambda: adsk.core.Application.get().fireCustomEvent(
             "CommandActionTriggerEventId"
         ),
     )
-
-    # 2.) Use generic utility for custo events
-    # periodic_thread = faf.utils.PeriodicExecuter(
-    #     2,
-    #     lambda: faf.utils.execute_as_event(
-    #         trigger_command_queue, event_id="CommandActionTriggerEventId"
-    #     ),
-    # )
 
     periodic_thread.start()
 
@@ -90,7 +82,7 @@ def on_created(event_args: adsk.core.CommandCreatedEventArgs):
 
 
 def on_input_changed(event_args: adsk.core.InputChangedEventArgs):
-    # in the input changed handler we do NOT need to use the custom_event -> execution_queue mechanism.
+    # in the input changed handler we do also need to use the custom_event -> execution_queue mechanism.
 
     global j
 
@@ -141,7 +133,7 @@ def run(context):
             resourceFolder="lightbulb",
             name="GenericDynamicAddin",
             commandCreated=on_created,
-            # inputChanged=on_input_changed,
+            inputChanged=on_input_changed,
             executePreview=on_preview,
             execute=on_execute,
             destroy=on_destroy,
